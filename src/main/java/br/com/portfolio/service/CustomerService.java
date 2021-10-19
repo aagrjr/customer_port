@@ -10,6 +10,13 @@ import br.com.portfolio.domain.search.CustomerSearchParams;
 import br.com.portfolio.exception.CustomerAlreadyExistsException;
 import br.com.portfolio.exception.CustomerNotFoundException;
 import br.com.portfolio.repository.CustomerRepository;
+import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
+import com.google.maps.GeocodingApiRequest;
+import com.google.maps.errors.ApiException;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +38,21 @@ public class CustomerService {
         if (repository.existsByDocumentNumber(payload.getDocumentNumber())) {
             throw new CustomerAlreadyExistsException();
         }
+        try {
+            var latLong = getLatLongByAddress(payload.getName());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
         return new CustomerResponse(repository.save(createModel(payload)));
     }
 
 
     public CustomerResponse update(ObjectId id, @Valid UpdateCustomerPayload payload) {
-        log.info("Update price", kv("UpdatePricePayload", payload), kv("Id", id));
+        log.info("Update customer{} {}", kv("UpdateCustomerPayload", payload), kv("Id", id));
         return repository.findById(id).map(customer -> {
                             return repository.save(updateModel(payload, customer));
                         }
@@ -89,4 +105,11 @@ public class CustomerService {
         return Example.of(filters(search));
     }
 
+    public List<Double> getLatLongByAddress(String address) throws IOException, InterruptedException, ApiException {
+        var context = new GeoApiContext.Builder().apiKey("").build();
+        var results = GeocodingApi.geocode(context, address).await();
+        var location = results[0].geometry.location;
+
+        return Arrays.asList(location.lat, location.lng);
+    }
 }
