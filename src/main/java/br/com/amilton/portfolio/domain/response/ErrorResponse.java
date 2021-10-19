@@ -14,8 +14,6 @@ import lombok.NoArgsConstructor;
 @ApiModel(description = "Represents all error responses in service.")
 public class ErrorResponse implements Serializable {
 
-	private static final long serialVersionUID = -6431868610599519417L;
-
 	@ApiModelProperty("An important information about this error (Ex. field name).")
 	private String error;
 
@@ -32,6 +30,11 @@ public class ErrorResponse implements Serializable {
 	@ApiModelProperty("An inner body, if exists.")
 	public ErrorResponse code(String code) {
 		this.errorCode = code;
+		return this;
+	}
+
+	public ErrorResponse tag(String tag) {
+		this.error = tag;
 		return this;
 	}
 

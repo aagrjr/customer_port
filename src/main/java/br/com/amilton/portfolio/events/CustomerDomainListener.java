@@ -3,6 +3,7 @@ package br.com.amilton.portfolio.events;
 import br.com.amilton.portfolio.domain.Customer;
 import br.com.amilton.portfolio.domain.CustomerElastic;
 import br.com.amilton.portfolio.repository.CustomerElasticRepository;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
@@ -30,9 +31,10 @@ public class CustomerDomainListener extends AbstractMongoEventListener<Customer>
                 .id(customer.getId().toHexString())
                 .name(customer.getName())
                 .gender(customer.getGender())
-                .birthDate(customer.getBirthDate())
+                .birthDate(customer.getBirthDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
                 .nickname(customer.getNickname())
                 .email(customer.getEmail())
+                .documentNumber(customer.getDocumentNumber())
                 .build();
     }
 }
