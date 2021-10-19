@@ -2,6 +2,7 @@ package br.com.portfolio.service;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
 
+import br.com.portfolio.domain.Contact;
 import br.com.portfolio.domain.Customer;
 import br.com.portfolio.domain.payload.CreateCustomerPayload;
 import br.com.portfolio.domain.payload.UpdateCustomerPayload;
@@ -12,9 +13,8 @@ import br.com.portfolio.exception.CustomerNotFoundException;
 import br.com.portfolio.repository.CustomerRepository;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
-import com.google.maps.GeocodingApiRequest;
-import com.google.maps.errors.ApiException;
-import java.io.IOException;
+import com.google.maps.model.GeocodingResult;
+import com.google.maps.model.LatLng;
 import java.util.Arrays;
 import java.util.List;
 import javax.validation.Valid;
@@ -30,31 +30,25 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Slf4j
 public class CustomerService {
+
     private final CustomerRepository repository;
 
     public CustomerResponse create(@Valid CreateCustomerPayload payload) {
         log.info("Create customer", kv("CreateCustomerPayload", payload));
-
         if (repository.existsByDocumentNumber(payload.getDocumentNumber())) {
             throw new CustomerAlreadyExistsException();
         }
-        try {
-            var latLong = getLatLongByAddress(payload.getName());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ApiException e) {
-            e.printStackTrace();
-        }
-        return new CustomerResponse(repository.save(createModel(payload)));
+        var latLong = getLatLongByAddress(payload.getAddress());
+        return new CustomerResponse(repository.save(createModel(payload, latLong)));
     }
 
 
     public CustomerResponse update(ObjectId id, @Valid UpdateCustomerPayload payload) {
         log.info("Update customer{} {}", kv("UpdateCustomerPayload", payload), kv("Id", id));
+
+        var latLong = getLatLongByAddress(payload.getAddress());
         return repository.findById(id).map(customer -> {
-                            return repository.save(updateModel(payload, customer));
+                            return repository.save(updateModel(payload, customer, latLong));
                         }
                 ).map(CustomerResponse::new)
                 .orElseThrow(CustomerNotFoundException::new);
@@ -78,7 +72,7 @@ public class CustomerService {
         return repository.findAll(example(search), pageable).map(CustomerResponse::new);
     }
 
-    private Customer createModel(CreateCustomerPayload payload) {
+    private Customer createModel(CreateCustomerPayload payload, List<Double> latLong) {
         return Customer.builder()
                 .name(payload.getName())
                 .gender(payload.getGender())
@@ -86,13 +80,16 @@ public class CustomerService {
                 .documentNumber(payload.getDocumentNumber())
                 .nickname(payload.getNickname())
                 .email(payload.getEmail())
+                .contact(Contact.builder().coordinates(latLong).address(payload.getAddress()).build())
                 .build();
     }
-    private Customer updateModel(UpdateCustomerPayload payload, Customer model) {
+
+    private Customer updateModel(UpdateCustomerPayload payload, Customer model, List<Double> latLong) {
         model.setName(payload.getName());
         model.setGender(payload.getGender());
         model.setNickname(payload.getNickname());
         model.setEmail(payload.getEmail());
+        model.setContact(Contact.builder().coordinates(latLong).address(payload.getAddress()).build());
         return model;
     }
 
@@ -105,11 +102,17 @@ public class CustomerService {
         return Example.of(filters(search));
     }
 
-    public List<Double> getLatLongByAddress(String address) throws IOException, InterruptedException, ApiException {
+    public List<Double> getLatLongByAddress(String address) {
+        String ERROR_MESSAGE = "Couldn't find specified custom location, falling back to co-ordinates";
         var context = new GeoApiContext.Builder().apiKey("").build();
-        var results = GeocodingApi.geocode(context, address).await();
-        var location = results[0].geometry.location;
-
-        return Arrays.asList(location.lat, location.lng);
+        try {
+            GeocodingResult[] request = GeocodingApi.newRequest(context).address(address).await();
+            LatLng location = request[0].geometry.location;
+            System.out.println("Found custom location to be: " + request[0].formattedAddress);
+            return Arrays.asList(location.lat, location.lng);
+        } catch (Exception e) {
+            log.error(ERROR_MESSAGE);
+            return null;
+        }
     }
 }
