@@ -25,49 +25,49 @@ import springfox.documentation.annotations.ApiIgnore;
 @Api(tags = "Person Api")
 public interface CustomerApi {
 
-    @ApiOperation(value = "Create new Price")
+    @ApiOperation(value = "Create new Customer")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Created"),
             @ApiResponse(code = 400, message = "Invalid payload value(s)"),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
-            @ApiResponse(code = 409, message = "Price already exists"),
+            @ApiResponse(code = 409, message = "Customer already exists"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
     CustomerResponse create(@ApiParam(required = true) @Valid CreateCustomerPayload payload);
 
-    @ApiOperation(value = "Update Price")
+    @ApiOperation(value = "Update customer")
     @ApiResponses(value = {
             @ApiResponse(code = 202, message = "Accepted"),
             @ApiResponse(code = 400, message = "Invalid id value or payload value(s)"),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
-            @ApiResponse(code = 404, message = "Price not found"),
+            @ApiResponse(code = 404, message = "Customer not found"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
-    CustomerResponse update(@ApiParam(value = "Price hexadecimal id", required = true) ObjectId id, @ApiParam(required = true) @Valid UpdateCustomerPayload payload);
+    CustomerResponse update(@ApiParam(value = "Customer hexadecimal id", required = true) ObjectId id, @ApiParam(required = true) @Valid UpdateCustomerPayload payload);
 
-    @ApiOperation(value = "Find Price by id")
+    @ApiOperation(value = "Find Customer by id")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok"),
             @ApiResponse(code = 400, message = "Invalid id value"),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
-            @ApiResponse(code = 404, message = "Price not found"),
+            @ApiResponse(code = 404, message = "Customer not found"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
-    CustomerResponse findById(@ApiParam(value = "Price hexadecimal id", required = true) ObjectId id);
+    CustomerResponse findById(@ApiParam(value = "Customer hexadecimal id", required = true) ObjectId id);
 
-    @ApiOperation(value = "Delete Price by id")
+    @ApiOperation(value = "Delete Customer by id")
     @ApiResponses(value = {
             @ApiResponse(code = 202, message = "Accepted"),
             @ApiResponse(code = 400, message = "Invalid id value"),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
-            @ApiResponse(code = 404, message = "Price not found"),
+            @ApiResponse(code = 404, message = "Customer not found"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
-    void delete(@ApiParam(value = "Price hexadecimal id", required = true) ObjectId id);
+    void delete(@ApiParam(value = "Customer hexadecimal id", required = true) ObjectId id);
 
-    @ApiOperation(value = "Finds all Prices", produces = APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Finds all Customers", produces = APPLICATION_JSON_VALUE)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "List of Price returned with success", response = CustomerResponse.class),
+            @ApiResponse(code = 200, message = "List of Customers returned with success", response = CustomerResponse.class),
             @ApiResponse(code = 401, message = "Unauthorized", response = ErrorResponse.class),
             @ApiResponse(code = 400, message = "Invalid parameter value was sent", response = ErrorResponse.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "An unexpected error occurred", response = ErrorResponse.class)})
