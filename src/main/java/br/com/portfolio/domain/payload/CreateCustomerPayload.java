@@ -13,6 +13,7 @@ import org.hibernate.validator.constraints.br.CPF;
 
 @Data
 public class CreateCustomerPayload {
+
     @ApiModelProperty(value = "Customer's name.", required = true)
     @Size(max = 120, message = "{Customer.name.size}")
     @NotBlank(message = "{Customer.name.notBlank}")
@@ -21,8 +22,8 @@ public class CreateCustomerPayload {
     private GenderEnum gender;
 
     @ApiModelProperty(value = "Customer's birth date, following rules about user's age.")
-    @ValidBirthDate(value=0)
-    @JsonFormat(pattern="yyyy-MM-dd")
+    @ValidBirthDate(value = 0)
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
 
     @ApiModelProperty(value = "Customer's document number. May be CPF or PASSPORT.", required = true)
@@ -40,5 +41,6 @@ public class CreateCustomerPayload {
     @NotBlank(message = "{Customer.email.notBlank}")
     private String email;
 
-
+    @ApiModelProperty(value = "Customer's address.", required = true)
+    private String address;
 }

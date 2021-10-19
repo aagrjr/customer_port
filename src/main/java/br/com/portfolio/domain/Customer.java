@@ -27,6 +27,7 @@ public class Customer {
     private String nickname;
     private String email;
     private String documentNumber;
+    private Contact contact;
 
     @CreatedDate
     private LocalDateTime creationDate;
