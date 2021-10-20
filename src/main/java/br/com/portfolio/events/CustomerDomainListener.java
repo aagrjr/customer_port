@@ -20,9 +20,7 @@ public class CustomerDomainListener extends AbstractMongoEventListener<Customer>
 
     @Override
     public void onAfterSave(AfterSaveEvent<Customer> event) {
-        log.info("Finding item on elastic");
-        final var customerElastic = repository.findById(event.getSource().getId().toHexString());
-
+        log.info("Saving item on elastic");
         repository.save(buildCustomerElastic(event.getSource()));
     }
 

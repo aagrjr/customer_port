@@ -3,6 +3,7 @@ package br.com.portfolio.exception.handler;
 import static java.util.stream.Collectors.toList;
 
 import br.com.portfolio.domain.response.ErrorResponse;
+import br.com.portfolio.exception.AddressNotFoundException;
 import br.com.portfolio.exception.CustomerAlreadyExistsException;
 import br.com.portfolio.exception.CustomerNotFoundException;
 import java.util.Collection;
@@ -46,7 +47,13 @@ public class ExceptionHandlerController {
 
     @ExceptionHandler(CustomerNotFoundException.class)
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
-    public ErrorResponse handlePCustomerNotFoundException(CustomerNotFoundException exception) {
+    public ErrorResponse handleCustomerNotFoundException(CustomerNotFoundException exception) {
+        return exceptionMessage(exception);
+    }
+
+    @ExceptionHandler(AddressNotFoundException.class)
+    @ResponseStatus(code = HttpStatus.NOT_FOUND)
+    public ErrorResponse handleAddressNotFoundException(AddressNotFoundException exception) {
         return exceptionMessage(exception);
     }
 

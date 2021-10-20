@@ -11,11 +11,6 @@ import br.com.portfolio.domain.search.CustomerSearchParams;
 import br.com.portfolio.exception.CustomerAlreadyExistsException;
 import br.com.portfolio.exception.CustomerNotFoundException;
 import br.com.portfolio.repository.CustomerRepository;
-import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.model.GeocodingResult;
-import com.google.maps.model.LatLng;
-import java.util.Arrays;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -32,13 +27,14 @@ import org.springframework.stereotype.Service;
 public class CustomerService {
 
     private final CustomerRepository repository;
+    private final GeoLocationService geolocationService;
 
     public CustomerResponse create(@Valid CreateCustomerPayload payload) {
         log.info("Create customer", kv("CreateCustomerPayload", payload));
         if (repository.existsByDocumentNumber(payload.getDocumentNumber())) {
             throw new CustomerAlreadyExistsException();
         }
-        var latLong = getLatLongByAddress(payload.getAddress());
+        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
         return new CustomerResponse(repository.save(createModel(payload, latLong)));
     }
 
@@ -46,7 +42,7 @@ public class CustomerService {
     public CustomerResponse update(ObjectId id, @Valid UpdateCustomerPayload payload) {
         log.info("Update customer{} {}", kv("UpdateCustomerPayload", payload), kv("Id", id));
 
-        var latLong = getLatLongByAddress(payload.getAddress());
+        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
         return repository.findById(id).map(customer -> {
                             return repository.save(updateModel(payload, customer, latLong));
                         }
@@ -102,17 +98,5 @@ public class CustomerService {
         return Example.of(filters(search));
     }
 
-    public List<Double> getLatLongByAddress(String address) {
-        String ERROR_MESSAGE = "Couldn't find specified custom location, falling back to co-ordinates";
-        var context = new GeoApiContext.Builder().apiKey("").build();
-        try {
-            GeocodingResult[] request = GeocodingApi.newRequest(context).address(address).await();
-            LatLng location = request[0].geometry.location;
-            System.out.println("Found custom location to be: " + request[0].formattedAddress);
-            return Arrays.asList(location.lat, location.lng);
-        } catch (Exception e) {
-            log.error(ERROR_MESSAGE);
-            return null;
-        }
-    }
+
 }
