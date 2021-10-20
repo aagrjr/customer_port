@@ -45,6 +45,11 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
         return new MongoCustomConversions(converters);
     }
 
+    @Override
+    public boolean autoIndexCreation() {
+        return true;
+    }
+
     class DateToOffsetDateTimeConverter implements Converter<Date, OffsetDateTime> {
 
         @Override

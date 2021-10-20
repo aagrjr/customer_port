@@ -18,6 +18,10 @@ import org.bson.types.ObjectId;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,6 +50,10 @@ public class CustomerService {
     }
 
     public CustomerResponse findById(ObjectId id) {
+        var customer = repository.findById(id).orElseThrow(CustomerNotFoundException::new);
+
+        findByLocationNear(customer, 200);
+
         return repository.findById(id)
                 .map(CustomerResponse::new)
                 .orElseThrow(CustomerNotFoundException::new);
@@ -94,5 +102,13 @@ public class CustomerService {
         return Example.of(filters(search));
     }
 
+    private void findByLocationNear(Customer customer, Integer distanceInKm) {
+        var point = new Point(customer.getContact().getCoordinates().get(0), customer.getContact().getCoordinates().get(1));
+        GeoResults<Customer> byLocationNear = repository.findByContactNear(
+                point,
+                new Distance(distanceInKm, Metrics.KILOMETERS));
+
+        System.out.println(byLocationNear);
+    }
 
 }
