@@ -40,7 +40,6 @@ import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
-import org.springframework.data.geo.Point;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -50,6 +49,8 @@ class CustomerServiceTest {
 
     @RegisterExtension
     static MockGenerator mockGenerator = MockGenerator.instance();
+    private final Distance distance = new Distance(2.5, Metrics.KILOMETERS);
+    private final ObjectId id = new ObjectId("61701da494bdec3eec35d8ff");
     @Mock
     CustomerRepository repository;
     @Mock
@@ -59,21 +60,13 @@ class CustomerServiceTest {
     private CreateCustomerPayload createCustomerPayload;
     private UpdateCustomerPayload updateCustomerPayload;
     private Customer customer;
-    private CustomerResponse customerResponse;
-    private CustomerDistanceResponse customerDistanceResponse;
-
-    private ObjectId id = new ObjectId("61701da494bdec3eec35d8ff");
-    private Point point = new Point(10, 20);
-    private Distance distance = new Distance(2.5, Metrics.KILOMETERS);
 
     @BeforeEach
-    public void beforeEach() throws Exception {
+    public void beforeEach() {
         createCustomerPayload = mockGenerator.generateFromJson("createPayload").as(CreateCustomerPayload.class);
         updateCustomerPayload = mockGenerator.generateFromJson("updatePayload").as(UpdateCustomerPayload.class);
 
         customer = mockGenerator.generateFromJson("customer").as(Customer.class);
-        customerResponse = new CustomerResponse(customer);
-        customerDistanceResponse = new CustomerDistanceResponse(customer, 200);
 
         reset(repository, geoLocationService);
     }
