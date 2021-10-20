@@ -24,8 +24,12 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @Slf4j
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    @Autowired
     private Environment env;
+
+    @Autowired
+    public MongoConfig(Environment env) {
+        this.env = env;
+    }
 
     @Override
     protected String getDatabaseName() {

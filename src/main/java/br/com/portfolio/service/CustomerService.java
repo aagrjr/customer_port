@@ -6,11 +6,15 @@ import br.com.portfolio.domain.Contact;
 import br.com.portfolio.domain.Customer;
 import br.com.portfolio.domain.payload.CreateCustomerPayload;
 import br.com.portfolio.domain.payload.UpdateCustomerPayload;
+import br.com.portfolio.domain.response.CustomerDistanceResponse;
 import br.com.portfolio.domain.response.CustomerResponse;
 import br.com.portfolio.domain.search.CustomerSearchParams;
 import br.com.portfolio.exception.CustomerAlreadyExistsException;
 import br.com.portfolio.exception.CustomerNotFoundException;
 import br.com.portfolio.repository.CustomerRepository;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,20 +54,18 @@ public class CustomerService {
     }
 
     public CustomerResponse findById(ObjectId id) {
-        var customer = repository.findById(id).orElseThrow(CustomerNotFoundException::new);
-
-        findByLocationNear(customer, 200);
-
-        return repository.findById(id)
-                .map(CustomerResponse::new)
-                .orElseThrow(CustomerNotFoundException::new);
+        return new CustomerResponse(getCustomerById(id));
     }
 
     public void delete(ObjectId id) {
         log.info("Delete customer -  Id: {}", kv("Id", id));
-        final var customer = repository.findById(id).orElseThrow(CustomerNotFoundException::new);
+        final var customer = getCustomerById(id);
 
         repository.delete(customer);
+    }
+
+    private Customer getCustomerById(ObjectId id) {
+        return repository.findById(id).orElseThrow(CustomerNotFoundException::new);
     }
 
     public Page<CustomerResponse> findAll(Pageable pageable, CustomerSearchParams search) {
@@ -71,7 +73,7 @@ public class CustomerService {
     }
 
     private Customer createModel(CreateCustomerPayload payload) {
-        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
+        var latLong = getLatLongByAddress(payload.getAddress());
         return Customer.builder()
                 .name(payload.getName())
                 .gender(payload.getGender())
@@ -84,13 +86,17 @@ public class CustomerService {
     }
 
     private Customer updateModel(UpdateCustomerPayload payload, Customer model) {
-        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
+        var latLong = getLatLongByAddress(payload.getAddress());
         model.setName(payload.getName());
         model.setGender(payload.getGender());
         model.setNickname(payload.getNickname());
         model.setEmail(payload.getEmail());
         model.setContact(Contact.builder().coordinates(latLong).address(payload.getAddress()).build());
         return model;
+    }
+
+    private List<Double> getLatLongByAddress(String address) {
+        return geolocationService.getLatLongByAddress(address);
     }
 
     private Customer filters(final CustomerSearchParams search) {
@@ -102,13 +108,28 @@ public class CustomerService {
         return Example.of(filters(search));
     }
 
-    private void findByLocationNear(Customer customer, Integer distanceInKm) {
-        var point = new Point(customer.getContact().getCoordinates().get(0), customer.getContact().getCoordinates().get(1));
-        GeoResults<Customer> byLocationNear = repository.findByContactNear(
-                point,
-                new Distance(distanceInKm, Metrics.KILOMETERS));
+    public List<CustomerDistanceResponse> findByLocationNear(Integer maxDistanceInKm, ObjectId id) {
+        var customer = getCustomerById(id);
 
-        System.out.println(byLocationNear);
+        var nearestCustomers = repository.findByContactNear(getPoint(customer), getDistance(maxDistanceInKm));
+        return getNearestCustomersResponseList(nearestCustomers);
+    }
+
+    private Point getPoint(Customer customer) {
+        return new Point(customer.getContact().getCoordinates().get(0), customer.getContact().getCoordinates().get(1));
+    }
+
+    private Distance getDistance(Integer maxDistanceInKm) {
+        return new Distance(maxDistanceInKm, Metrics.KILOMETERS);
+    }
+
+    private List<CustomerDistanceResponse> getNearestCustomersResponseList(GeoResults<Customer> nearestCustomers) {
+        return nearestCustomers.getContent().stream().map(geoResult -> {
+            if (geoResult.getDistance().getValue() > 0) {
+                return new CustomerDistanceResponse(geoResult.getContent(), geoResult.getDistance().getValue());
+            }
+            return null;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
 }

@@ -5,6 +5,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 import br.com.portfolio.domain.payload.CreateCustomerPayload;
 import br.com.portfolio.domain.payload.UpdateCustomerPayload;
+import br.com.portfolio.domain.response.CustomerDistanceResponse;
 import br.com.portfolio.domain.response.CustomerResponse;
 import br.com.portfolio.domain.response.ErrorResponse;
 import br.com.portfolio.domain.search.CustomerSearchParams;
@@ -14,15 +15,18 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import java.util.List;
 import javax.validation.Valid;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import springfox.documentation.annotations.ApiIgnore;
 
-@Api(tags = "Person Api")
+@Api(tags = "Customer Api")
 public interface CustomerApi {
 
     @ApiOperation(value = "Create new Customer")
@@ -43,11 +47,12 @@ public interface CustomerApi {
             @ApiResponse(code = 403, message = "Forbidden"),
             @ApiResponse(code = 404, message = "Customer not found"),
             @ApiResponse(code = 500, message = "Internal Server Error")})
-    CustomerResponse update(@ApiParam(value = "Customer hexadecimal id", required = true) ObjectId id, @ApiParam(required = true) @Valid UpdateCustomerPayload payload);
+    CustomerResponse update(@ApiParam(value = "Customer hexadecimal id", required = true) ObjectId id,
+            @ApiParam(required = true) @Valid UpdateCustomerPayload payload);
 
     @ApiOperation(value = "Find Customer by id")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Ok"),
+            @ApiResponse(code = 200, message = "Ok", response = CustomerResponse.class),
             @ApiResponse(code = 400, message = "Invalid id value"),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
@@ -74,4 +79,13 @@ public interface CustomerApi {
     @ApiPageable
     Page<CustomerResponse> findAll(@ApiIgnore @PageableDefault(direction = Sort.Direction.DESC, sort = "id") Pageable pageable, CustomerSearchParams search);
 
+    @ApiOperation(value = "Find Nearest Customers by id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Ok", response = CustomerDistanceResponse.class),
+            @ApiResponse(code = 400, message = "Invalid id value"),
+            @ApiResponse(code = 401, message = "Unauthorized"),
+            @ApiResponse(code = 403, message = "Forbidden"),
+            @ApiResponse(code = 404, message = "Customer not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    List<CustomerDistanceResponse> findByLocationNear(@RequestParam Integer maxDistanceInKm, @PathVariable ObjectId id);
 }

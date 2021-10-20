@@ -5,9 +5,11 @@ import static org.springframework.http.HttpStatus.OK;
 import br.com.portfolio.api.CustomerApi;
 import br.com.portfolio.domain.payload.CreateCustomerPayload;
 import br.com.portfolio.domain.payload.UpdateCustomerPayload;
+import br.com.portfolio.domain.response.CustomerDistanceResponse;
 import br.com.portfolio.domain.response.CustomerResponse;
 import br.com.portfolio.domain.search.CustomerSearchParams;
 import br.com.portfolio.service.CustomerService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,4 +70,10 @@ public class CustomerController implements CustomerApi {
         return service.findAll(pageable, search);
     }
 
+    @Override
+    @GetMapping("/geo/{id}")
+    @ResponseStatus(code = HttpStatus.OK)
+    public List<CustomerDistanceResponse> findByLocationNear(@RequestParam Integer maxDistanceInKm, @PathVariable ObjectId id) {
+        return service.findByLocationNear(maxDistanceInKm, id);
+    }
 }
