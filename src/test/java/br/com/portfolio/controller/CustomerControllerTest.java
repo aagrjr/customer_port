@@ -1,7 +1,7 @@
 package br.com.portfolio.controller;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -30,7 +30,7 @@ import br.com.portfolio.exception.handler.ExceptionHandlerController;
 import br.com.portfolio.helper.MockGenerator;
 import br.com.portfolio.helper.TestMessageSource;
 import br.com.portfolio.service.CustomerService;
-import java.util.Arrays;
+import java.util.List;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @WebMvcTest(CustomerController.class)
@@ -59,22 +58,18 @@ class CustomerControllerTest {
     private static final String BASE_URL = "/customers/";
     @RegisterExtension
     static MockGenerator mockGenerator = MockGenerator.instance();
+    private final ObjectId id = new ObjectId();
     @MockBean
     private CustomerService service;
     private CreateCustomerPayload createCustomerPayload;
     private UpdateCustomerPayload updateCustomerPayload;
     private MockMvc mockMvc;
-
     private Customer customer;
     private CustomerResponse customerResponse;
     private CustomerDistanceResponse customerDistanceResponse;
 
-    private ObjectId id = new ObjectId();
-
-    private WebApplicationContext webApplicationContext;
-
     @BeforeEach
-    public void beforeEach() throws Exception {
+    private void beforeEach() {
         createCustomerPayload = mockGenerator.generateFromJson("createPayload").as(CreateCustomerPayload.class);
         updateCustomerPayload = mockGenerator.generateFromJson("updatePayload").as(UpdateCustomerPayload.class);
 
@@ -211,7 +206,7 @@ class CustomerControllerTest {
     @Test
     void findAllWithSuccessStatusCode200() throws Exception {
         final Pageable pageable = PageRequest.of(0, 10);
-        final Page<CustomerResponse> page = new PageImpl<>(Arrays.asList(new CustomerResponse(customer)), pageable, Integer.MAX_VALUE);
+        final Page<CustomerResponse> page = new PageImpl<>(List.of(new CustomerResponse(customer)), pageable, Integer.MAX_VALUE);
 
         given(service.findAll(any(Pageable.class), any(CustomerSearchParams.class))).willReturn(page);
 
@@ -252,7 +247,7 @@ class CustomerControllerTest {
 
     @Test
     void findByLocationNearWithSuccessStatusCode200() throws Exception {
-        when(service.findByLocationNear(200, id)).thenReturn(Arrays.asList(customerDistanceResponse));
+        when(service.findByLocationNear(200, id)).thenReturn(List.of(customerDistanceResponse));
 
         mockMvc.perform(
                         get(BASE_URL.concat("geo/").concat(id.toString())).contentType(MediaType.APPLICATION_JSON)
@@ -265,7 +260,7 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.[0].email", is(customerResponse.getEmail())))
                 .andExpect(jsonPath("$.[0].birthDate", is(customerResponse.getBirthDate().toString())))
                 .andExpect(jsonPath("$.[0].documentNumber", is(customerResponse.getDocumentNumber())))
-                .andExpect(jsonPath("$.size()", is(1)));
+                .andExpect(jsonPath("$.length()", is(1)));
 
         verify(service).findByLocationNear(200, id);
     }

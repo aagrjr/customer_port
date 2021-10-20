@@ -16,6 +16,6 @@ public class CustomerDistanceResponse extends CustomerResponse {
 
     private String formatDistance(double distance) {
         DecimalFormat df = new DecimalFormat("#.###");
-        return df.format(distance);
+        return df.format(distance).replace(",", ".");
     }
 }
