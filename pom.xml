@@ -5,8 +5,8 @@
   <build>
     <plugins>
       <plugin>
-          <artifactId>spring-boot-maven-plugin</artifactId>
-          <configuration>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
           <excludes>
             <exclude>
               <artifactId>lombok</artifactId>
@@ -14,7 +14,7 @@
             </exclude>
           </excludes>
         </configuration>
-          <groupId>org.springframework.boot</groupId>
+        <groupId>org.springframework.boot</groupId>
       </plugin>
     </plugins>
   </build>
@@ -86,8 +86,8 @@
       <version>2.0.1.Final</version>
     </dependency>
     <dependency>
-      <groupId>com.google.maps</groupId>
       <artifactId>google-maps-services</artifactId>
+      <groupId>com.google.maps</groupId>
       <version>1.0.0</version>
     </dependency>
   </dependencies>
