@@ -1,7 +1,5 @@
 package br.com.portfolio.controller;
 
-import static org.springframework.http.HttpStatus.OK;
-
 import br.com.portfolio.api.CustomerApi;
 import br.com.portfolio.domain.payload.CreateCustomerPayload;
 import br.com.portfolio.domain.payload.UpdateCustomerPayload;
@@ -64,7 +62,7 @@ public class CustomerController implements CustomerApi {
     }
 
     @Override
-    @ResponseStatus(code = OK)
+    @ResponseStatus(code = HttpStatus.OK)
     @GetMapping
     public Page<CustomerResponse> findAll(Pageable pageable, CustomerSearchParams search) {
         return service.findAll(pageable, search);

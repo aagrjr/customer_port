@@ -14,6 +14,7 @@ public class UpdateCustomerPayload {
     @Size(max = 120, message = "{Customer.name.size}")
     @NotBlank(message = "{Customer.name.notBlank}")
     private String name;
+    
     @ApiModelProperty(value = "Customer's name.", required = true, example = "MALE/FEMALE")
     private GenderEnum gender;
 

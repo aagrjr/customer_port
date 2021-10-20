@@ -1,0 +1,19 @@
+{
+  "id": "61701da494bdec3eec35d8ff",
+  "name": "Test",
+  "gender": "MALE",
+  "birthDate": "2011-12-15",
+  "email": "aa@test.com",
+  "documentNumber": "38372550000",
+  "nickname": "NickTest",
+  "contact": {
+    "address": "Rua Vergueiro, 777",
+    "coordinates": [
+      -23.530044,
+      -46.7281788
+    ],
+    "type": "Point"
+  },
+  "creationDate": "2021-10-20T16:46:12.572Z",
+  "lastModifiedDate": "2021-10-20T16:46:12.572Z"
+}
