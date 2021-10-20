@@ -11,7 +11,6 @@ import br.com.portfolio.domain.search.CustomerSearchParams;
 import br.com.portfolio.exception.CustomerAlreadyExistsException;
 import br.com.portfolio.exception.CustomerNotFoundException;
 import br.com.portfolio.repository.CustomerRepository;
-import java.util.List;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,22 +29,18 @@ public class CustomerService {
     private final GeoLocationService geolocationService;
 
     public CustomerResponse create(@Valid CreateCustomerPayload payload) {
-        log.info("Create customer", kv("CreateCustomerPayload", payload));
+        log.info("Create customer - Payload: {}", kv("CreateCustomerPayload", payload));
         if (repository.existsByDocumentNumber(payload.getDocumentNumber())) {
             throw new CustomerAlreadyExistsException();
         }
-        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
-        return new CustomerResponse(repository.save(createModel(payload, latLong)));
+        return new CustomerResponse(repository.save(createModel(payload)));
     }
 
 
     public CustomerResponse update(ObjectId id, @Valid UpdateCustomerPayload payload) {
-        log.info("Update customer{} {}", kv("UpdateCustomerPayload", payload), kv("Id", id));
+        log.info("Update customer - Id: {} Payload: {}", kv("Id", id), kv("UpdateCustomerPayload", payload));
 
-        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
-        return repository.findById(id).map(customer -> {
-                            return repository.save(updateModel(payload, customer, latLong));
-                        }
+        return repository.findById(id).map(customer -> repository.save(updateModel(payload, customer))
                 ).map(CustomerResponse::new)
                 .orElseThrow(CustomerNotFoundException::new);
     }
@@ -57,8 +52,7 @@ public class CustomerService {
     }
 
     public void delete(ObjectId id) {
-        log.info("Delete customer", kv("Id", id));
-
+        log.info("Delete customer -  Id: {}", kv("Id", id));
         final var customer = repository.findById(id).orElseThrow(CustomerNotFoundException::new);
 
         repository.delete(customer);
@@ -68,7 +62,8 @@ public class CustomerService {
         return repository.findAll(example(search), pageable).map(CustomerResponse::new);
     }
 
-    private Customer createModel(CreateCustomerPayload payload, List<Double> latLong) {
+    private Customer createModel(CreateCustomerPayload payload) {
+        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
         return Customer.builder()
                 .name(payload.getName())
                 .gender(payload.getGender())
@@ -80,7 +75,8 @@ public class CustomerService {
                 .build();
     }
 
-    private Customer updateModel(UpdateCustomerPayload payload, Customer model, List<Double> latLong) {
+    private Customer updateModel(UpdateCustomerPayload payload, Customer model) {
+        var latLong = geolocationService.getLatLongByAddress(payload.getAddress());
         model.setName(payload.getName());
         model.setGender(payload.getGender());
         model.setNickname(payload.getNickname());
