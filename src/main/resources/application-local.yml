@@ -8,3 +8,6 @@ elasticsearch:
     hostname: localhost
     port: 9200
     scheme: Http
+local:
+  geolocation:
+    key: <key>
