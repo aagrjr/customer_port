@@ -38,6 +38,11 @@ public class CustomerResponse {
         return customer.getEmail();
     }
 
+    @ApiModelProperty("Customer's address")
+    public String getAddress() {
+        return customer.getContact().getAddress();
+    }
+
     @ApiModelProperty("Customer's birthDate")
     public LocalDate getBirthDate() {
         return customer.getBirthDate();

@@ -91,10 +91,10 @@
       <version>1.0.0</version>
     </dependency>
   </dependencies>
-  <description>portfolio</description>
-  <groupId>br.com.amilton</groupId>
+  <description>customer_port</description>
+  <groupId>br.com.portfolio</groupId>
   <modelVersion>4.0.0</modelVersion>
-  <name>portfolio</name>
+  <name>customer_port</name>
   <parent>
     <artifactId>spring-boot-starter-parent</artifactId>
     <groupId>org.springframework.boot</groupId>
